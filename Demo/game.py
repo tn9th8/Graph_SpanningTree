@@ -11,7 +11,7 @@ from constants import *
 
 # hàm run
 def run(choices):
-    global screen, edges, clock, font1, font2
+    global screen, edges, clock, font, font2
 
     # chuẩn hóa graph: thêm 2 màu sắc cho node
     for element in graph:
@@ -27,8 +27,7 @@ def run(choices):
     
     clock = pygame.time.Clock()
     screen = pygame.display.set_mode((display_width, display_height))
-    font1 = pygame.font.SysFont('freesanbold.ttf', 30)
-    font2 = pygame.font.SysFont('chalkduster.ttf', 40)
+    font = pygame.font.SysFont('freesanbold.ttf', 30)
     
     # vẽ graph
     draw_graph()
@@ -43,8 +42,35 @@ def run(choices):
             if event.type == pygame.QUIT: 
                 pygame.quit() 
                 sys.exit() 
-        
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_a:
+                    print('auto run')
+                    do_BFS_auto()
+                if event.key == pygame.K_o:
+                    print('one step')
+                    do_BFS_one_step()
 
+def do_BFS_auto():
+        # run BFS algorith loop
+        while len(queue) > 0:
+            n1 = queue.pop(0) # current node
+            current = graph[n1] 
+            current[2] = white
+            current[3] = green_dark
+            
+            for n2 in current[1]: # adjacents
+                if graph[n2][3] == black and n2 not in queue:  # haven't visited => leaf node
+                    queue.append(n2)
+                    graph[n2][2] = white
+                    graph[n2][3] = red
+                    edges[edge_id(n1,n2)][1] = yellow 
+        
+                    update()
+        
+            current[3] = blue # visited 
+            update()
+
+def do_BFS_one_step():
         # run BFS algorith loop
         while len(queue) > 0:
             n1 = queue.pop(0) # current node
@@ -61,13 +87,19 @@ def run(choices):
         
                     update()
             
-            #wait = input("keep going: [y/n]?  ")
-            #if wait == 'y':
+            loop = True
+            while loop:
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT: 
+                        pygame.quit() 
+                        sys.exit()
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE:
+                            loop = False
+
             current[3] = blue # visited 
             update()
-
-
-
+            
 #
 def edge_id(n1, n2): 
     return tuple(sorted((n1, n2)))  
@@ -106,6 +138,6 @@ def circle_fill(i, xy, num_color, line_color, fill_color, radius, thickness):
     pygame.draw.circle(screen, fill_color, xy, radius - thickness)
 
     # Vẽ số nguyên i tại vị trí xy với màu num_color
-    text = font1.render(str(i), True, num_color)
+    text = font.render(str(i), True, num_color)
     text_rect = text.get_rect(center=xy)
     screen.blit(text, text_rect)
